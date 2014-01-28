@@ -18,19 +18,37 @@ let g:smart_rename_loaded = 1
 let s:save_cpo = &cpo
 set cpo&vim
 
+
 " rename local variable that is search-matched
-function! s:RenameSearch(newName)
+" @param {String} newName
+" @param {Boolean} confirm
+function! s:RenameSearch(newName, confirm)
     let matched = @/
-    mark x
-    "exec 'gd<cr>[{V%:s/<C-R>//<c-r>z/g<cr>`x'
-    exec ':%s!' . matched .'!' . a:newName .'!g'
+    let saved_cursor_pos = getpos('.')
+    if a:confirm
+        exec ':%s!' . matched .'!' . a:newName .'!gc'
+    else
+        exec ':%s!' . matched .'!' . a:newName .'!g'
+    endif
     "to highlight the new name
-    let @/ = '\<' . escapse(a:newName, '\') . '\>'
-    exec "'x"
+    let @/ = '\V\<' . escape(a:newName, '\') . '\>'
+    " set cursor to the old position
+    call setpos('.', saved_cursor_pos)
+    echomsg 'Rename ' . matched . ' to ' . a:newName ' completely!'
 endfunction
 
+"with confirm
+function! s:Rename(newName)
+    call s:RenameSearch(a:newName, 1)
+endfunction
 
-command! -nargs=1 Rename call s:RenameSearch(<f-args>)
+"without confirm
+function! s:RenameWithoutConfirm(newName)
+    call s:RenameSearch(a:newName, 0)
+endfunction
+
+command! -nargs=1 Re call s:Rename(<f-args>)
+command! -nargs=1 Rename call s:RenameWithoutConfirm(<f-args>)
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
