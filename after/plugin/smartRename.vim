@@ -2,7 +2,7 @@
 "     File Name           :     smartRename.vim
 "     Created By          :     FuDesign2008<FuDesign2008@163.com>
 "     Creation Date       :     [2014-01-28 12:24]
-"     Last Modified       :     [2014-01-28 13:12]
+"     Last Modified       :     [2014-01-28 15:22]
 "     Description         :     rename variables in a smart way.
 "
 "     inspired by:
@@ -20,13 +20,13 @@ set cpo&vim
 
 " rename local variable that is search-matched
 function! s:RenameSearch(newName)
-    let save_z = @z
-    let @z = a:newName
-    " Locally (local to block) rename a variable
-    exec 'mx:silent! norm gd<cr>[{V%:s/<C-R>//<c-r>z/g<cr>`x'
-    let @z = save_z
+    let matched = @/
+    mark x
+    "exec 'gd<cr>[{V%:s/<C-R>//<c-r>z/g<cr>`x'
+    exec ':%s!' . matched .'!' . a:newName .'!g'
     "to highlight the new name
-    let @/ = '\<' + newName + '\>'
+    let @/ = '\<' . escapse(a:newName, '\') . '\>'
+    exec "'x"
 endfunction
 
 
