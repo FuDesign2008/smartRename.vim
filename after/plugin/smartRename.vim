@@ -25,8 +25,9 @@ set cpo&vim
 function! s:RenameSearch(startLine, endLine, newName, confirm)
     let matched = @/
     let saved_cursor_pos = getpos('.')
+    let range = a:startLine . ',' . a:endLine
 
-    let cmd = a:startLine . ',' a:endLine . 's!' . matched .'!' . a:newName .'!g'
+    let cmd =  range . 's!' . matched . '!' . a:newName .'!g'
     if a:confirm
         let cmd = cmd . 'c'
     endif
@@ -38,7 +39,7 @@ function! s:RenameSearch(startLine, endLine, newName, confirm)
     " set cursor to the old position
     call setpos('.', saved_cursor_pos)
 
-    echomsg 'Line <' . a:startLine . ',' . a:endLine . '>: rename ' . matched . ' to ' . a:newName ' completely!'
+    echomsg 'Line <' . range . '>: rename ' . matched . ' to ' . a:newName ' completely!'
 
 endfunction
 
