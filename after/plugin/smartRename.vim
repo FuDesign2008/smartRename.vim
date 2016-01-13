@@ -22,33 +22,38 @@ set cpo&vim
 " rename local variable that is search-matched
 " @param {String} newName
 " @param {Boolean} confirm
-function! s:RenameSearch(newName, confirm)
+function! s:RenameSearch(startLine, endLine, newName, confirm)
     let matched = @/
     let saved_cursor_pos = getpos('.')
+
+    let cmd = a:startLine . ',' a:endLine . 's!' . matched .'!' . a:newName .'!g'
     if a:confirm
-        exec ':%s!' . matched .'!' . a:newName .'!gc'
-    else
-        exec ':%s!' . matched .'!' . a:newName .'!g'
+        let cmd = cmd . 'c'
     endif
+
+    exec cmd
+
     "to highlight the new name
     let @/ = '\V\<' . escape(a:newName, '\') . '\>'
     " set cursor to the old position
     call setpos('.', saved_cursor_pos)
-    echomsg 'Rename ' . matched . ' to ' . a:newName ' completely!'
+
+    echomsg 'Line <' . a:startLine . ',' . a:endLine . '>: rename ' . matched . ' to ' . a:newName ' completely!'
+
 endfunction
 
 "with confirm
-function! s:Rename(newName)
-    call s:RenameSearch(a:newName, 1)
+function! s:Rename(startLine, endLine, newName)
+    call s:RenameSearch(a:startLine, a:endLine, a:newName, 1)
 endfunction
 
 "without confirm
-function! s:RenameWithoutConfirm(newName)
-    call s:RenameSearch(a:newName, 0)
+function! s:RenameWithoutConfirm(startLine, endLine, newName)
+    call s:RenameSearch(a:startLine, a:endLine, a:newName, 0)
 endfunction
 
-command! -nargs=1 Re call s:Rename(<f-args>)
-command! -nargs=1 Rename call s:RenameWithoutConfirm(<f-args>)
+command! -range=% -nargs=1 Re     call s:Rename(<line1>, <line2>, <q-args>)
+command! -range=% -nargs=1 Rename call s:RenameWithoutConfirm(<line1>, <line2>, <q-args>)
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
