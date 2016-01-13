@@ -22,7 +22,7 @@ set cpo&vim
 " rename local variable that is search-matched
 " @param {String} newName
 " @param {Boolean} confirm
-function! s:RenameSearch(startLine, endLine, newName, confirm)
+function! s:Rename(startLine, endLine, newName, confirm)
     let matched = @/
     let saved_cursor_pos = getpos('.')
     let range = a:startLine . ',' . a:endLine
@@ -31,7 +31,6 @@ function! s:RenameSearch(startLine, endLine, newName, confirm)
     if a:confirm
         let cmd = cmd . 'c'
     endif
-
     exec cmd
 
     "to highlight the new name
@@ -40,20 +39,21 @@ function! s:RenameSearch(startLine, endLine, newName, confirm)
     call setpos('.', saved_cursor_pos)
 
     echomsg 'Line <' . range . '>: rename ' . matched . ' to ' . a:newName ' completely!'
-
 endfunction
 
+
 "with confirm
-function! s:Rename(startLine, endLine, newName)
-    call s:RenameSearch(a:startLine, a:endLine, a:newName, 1)
+function! s:RenameWithConfirm(startLine, endLine, newName)
+    call s:Rename(a:startLine, a:endLine, a:newName, 1)
 endfunction
 
 "without confirm
 function! s:RenameWithoutConfirm(startLine, endLine, newName)
-    call s:RenameSearch(a:startLine, a:endLine, a:newName, 0)
+    call s:Rename(a:startLine, a:endLine, a:newName, 0)
 endfunction
 
-command! -range=% -nargs=1 Re     call s:Rename(<line1>, <line2>, <q-args>)
+
+command! -range=% -nargs=1 Re     call s:RenameWithConfirm(<line1>, <line2>, <q-args>)
 command! -range=% -nargs=1 Rename call s:RenameWithoutConfirm(<line1>, <line2>, <q-args>)
 
 let &cpo = s:save_cpo
