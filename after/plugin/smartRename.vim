@@ -15,8 +15,9 @@ if exists('g:smart_rename_loaded')
 endif
 
 let g:smart_rename_loaded = 1
-let s:save_cpo = &cpo
-set cpo&vim
+" let s:save_cpo = &cpo
+let s:save_cpo = &cpoptions
+set cpoptions&vim
 
 
 " rename local variable that is search-matched
@@ -53,8 +54,41 @@ function! s:RenameWithoutConfirm(startLine, endLine, newName)
 endfunction
 
 
+" taken from https://raw.githubusercontent.com/vim-scripts/Rename2/master/plugin/Rename2.vim
+function! s:RenameFile(name, bang)
+    let l:curfile = expand('%:p')
+    let l:curfilepath = expand('%:p:h')
+    let l:newname = l:curfilepath . '/' . a:name
+    let v:errmsg = ''
+    silent! exe 'saveas' . a:bang . ' ' . l:newname
+    if v:errmsg =~# '^$\|^E329'
+        if expand('%:p') !=# l:curfile && filewritable(expand('%:p'))
+            silent exe 'bwipe! ' . l:curfile
+            if delete(l:curfile)
+                echoerr 'Could not delete ' . l:curfile
+            endif
+        endif
+    else
+        echoerr v:errmsg
+    endif
+endfunction
+
+function! s:RenameExtension(extension, bang)
+    let fileName = expand('%:t:r')
+    let newFileName = fileName . '.' . a:extension
+    call s:RenameFile(newFileName, a:bang)
+endfunction
+
+
 command! -range=% -nargs=1 Re     call s:RenameWithConfirm(<line1>, <line2>, <q-args>)
 command! -range=% -nargs=1 Rename call s:RenameWithoutConfirm(<line1>, <line2>, <q-args>)
 
-let &cpo = s:save_cpo
+" :RenameFile[!] {newname}
+command! -nargs=1 -complete=file -bang RenameFile :call s:RenameFile("<args>", "<bang>")
+
+" :RenameExt[!] {newextension}
+command! -nargs=1 -complete=file -bang RenameExt :call s:RenameExtension("<args>", "<bang>")
+
+" let &cpo = s:save_cpo
+let &cpoptions = s:save_cpo
 unlet s:save_cpo
