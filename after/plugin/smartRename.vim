@@ -80,14 +80,14 @@ function! s:RenameExtension(extension, bang)
 endfunction
 
 
-command! -range=% -nargs=1 Re     call s:RenameWithConfirm(<line1>, <line2>, <q-args>)
-command! -range=% -nargs=1 Rename call s:RenameWithoutConfirm(<line1>, <line2>, <q-args>)
+command! -range=% -nargs=1 Re      :call s:RenameWithConfirm(<line1>, <line2>, <q-args>)
+command! -range=% -nargs=1 Rename  :call s:RenameWithoutConfirm(<line1>, <line2>, <q-args>)
 
 " :RenameFile[!] {newname}
 command! -nargs=1 -complete=file -bang RenameFile :call s:RenameFile("<args>", "<bang>")
 
 " :RenameExt[!] {newextension}
-command! -nargs=1 -complete=file -bang RenameExt :call s:RenameExtension("<args>", "<bang>")
+command! -nargs=1 -complete=filetype -bang RenameExt :call s:RenameExtension("<args>", "<bang>")
 
 " let &cpo = s:save_cpo
 let &cpoptions = s:save_cpo
