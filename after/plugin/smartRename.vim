@@ -54,29 +54,44 @@ function! s:RenameWithoutConfirm(startLine, endLine, newName)
 endfunction
 
 
-" taken from https://raw.githubusercontent.com/vim-scripts/Rename2/master/plugin/Rename2.vim
-function! s:RenameFile(name, bang)
-    let l:curfile = expand('%:p')
-    let l:curfilepath = expand('%:p:h')
-    let l:newname = l:curfilepath . '/' . a:name
-    let v:errmsg = ''
-    silent! exe 'saveas' . a:bang . ' ' . l:newname
-    if v:errmsg =~# '^$\|^E329'
-        if expand('%:p') !=# l:curfile && filewritable(expand('%:p'))
-            silent exe 'bwipe! ' . l:curfile
-            if delete(l:curfile)
-                echoerr 'Could not delete ' . l:curfile
-            endif
-        endif
+"return 0 or 1
+function! s:RenameFile(filePath, newFilePath, bang)
+    if executable('mv') == 0
+        echoerr 'Need the suppport of `mv` shell command'
+        return 0
+    endif
+
+    if filereadable(a:filePath) == 0
+        echoerr 'The file is not readable: ' . a:filePath
+        return 0
+    endif
+    let prefix = a:bang ? 'mv -fv' : 'mv -nv'
+    let command = prefix . ' "' . a:filePath . '" "' . a:newFilePath . '"'
+    try
+        call system(command)
+    catch
+        return 0
+    endtry
+
+    return 1
+endfunction
+
+function! s:RenameCurrentFile(name, bang)
+    let curfile = expand('%:p')
+    let curfilepath = expand('%:p:h')
+    let filePathNew = curfilepath . '/' . a:name
+    let isRenameOk = s:RenameFile(curfile, filePathNew, a:bang)
+    if isRenameOk
+        execute ':e ' . filePathNew
     else
-        echoerr v:errmsg
+        echoerr 'Failed to rename current file -> ' . a:name
     endif
 endfunction
 
 function! s:RenameExtension(extension, bang)
     let fileName = expand('%:t:r')
     let newFileName = fileName . '.' . a:extension
-    call s:RenameFile(newFileName, a:bang)
+    call s:RenameCurrentFile(newFileName, a:bang)
 endfunction
 
 
@@ -84,7 +99,7 @@ command! -range=% -nargs=1 Re      :call s:RenameWithConfirm(<line1>, <line2>, <
 command! -range=% -nargs=1 Rename  :call s:RenameWithoutConfirm(<line1>, <line2>, <q-args>)
 
 " :RenameFile[!] {newname}
-command! -nargs=1 -complete=file -bang RenameFile :call s:RenameFile("<args>", "<bang>")
+command! -nargs=1 -complete=file -bang RenameFile :call s:RenameCurrentFile("<args>", "<bang>")
 
 " :RenameExt[!] {newextension}
 command! -nargs=1 -complete=filetype -bang RenameExt :call s:RenameExtension("<args>", "<bang>")
