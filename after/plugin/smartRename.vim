@@ -76,13 +76,24 @@ function! s:RenameFile(filePath, newFilePath, bang)
     return 1
 endfunction
 
+function! s:RelativePathOfCwd(filePath)
+    let cwd = getcwd() . '/'
+    if stridx(a:filePath, cwd) == 0
+        let len = strlen(cwd)
+        let relative = strpart(a:filePath, len)
+        return relative
+    endif
+    return a:filePath
+endfunction
+
 function! s:RenameCurrentFile(name, bang)
     let curfile = expand('%:p')
     let curfilepath = expand('%:p:h')
     let filePathNew = curfilepath . '/' . a:name
     let isRenameOk = s:RenameFile(curfile, filePathNew, a:bang)
     if isRenameOk
-        execute ':e ' . filePathNew
+        let newPath = s:RelativePathOfCwd(filePathNew)
+        execute ':e ' . newPath
     else
         echoerr 'Failed to rename current file -> ' . a:name
     endif
