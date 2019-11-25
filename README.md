@@ -26,6 +26,9 @@ Rename variables/file name in a smart way
 
 ## change log
 
+-   2019-11-25
+    -   Add `:RenameName`
+    -   Add completer for all commands
 -   2019-04-16
     -   Add `:RenameFile`, `:RenameExt`
 -   2016-01-13

@@ -99,21 +99,84 @@ function! s:RenameCurrentFile(name, bang)
     endif
 endfunction
 
+function! s:RenameName(name, bang)
+    let extension = expand('%:e')
+    let newFileName = a:name . '.' . extension
+    call s:RenameCurrentFile(newFileName, a:bang)
+endfunction
+
 function! s:RenameExtension(extension, bang)
     let fileName = expand('%:t:r')
     let newFileName = fileName . '.' . a:extension
     call s:RenameCurrentFile(newFileName, a:bang)
 endfunction
 
+function! s:ListFiles(path)
+    let files = split(globpath(a:path, '**'), '\n')
+    return files
+endfunction
+
+function! s:ListFilesOfCurrentFile()
+    let path = expand('%:h')
+    let files = s:ListFiles(path)
+    let extensionList = []
+    let nameList = []
+    for item in files
+        let extension = fnamemodify(item, ':e')
+        let name = fnamemodify(':t:r')
+        if strlen(extension)
+            call add(extensionList, extension)
+        endif
+        if strlen(name)
+            call add(nameList, name)
+        endif
+    endfor
+    return {
+        \ 'extensions': extensionList,
+        \ 'names': nameList
+        \ }
+endfunction
+
+
+function RenameNameCompleter(A, L, P)
+    let result = s:ListFilesOfCurrentFile()
+    let names = get(result, 'names', [])
+    return names
+endfunction
+
+function RenameExtCompleter(A, L, P)
+    let result = s:ListFilesOfCurrentFile()
+    let extensions = get(result, 'extensions', [])
+    return extensions
+endfunction
+
+function RenameFileCompleter(A, L, P)
+    let result = s:ListFilesOfCurrentFile()
+    if stridx(a:A, '.') > -1
+        let extensions = get(result, 'extensions', [])
+        return extensions
+    endif
+    let names = get(result, 'names', [])
+    return names
+endfunction
+
 
 command! -range=% -nargs=1 Re      :call s:RenameWithConfirm(<line1>, <line2>, <q-args>)
 command! -range=% -nargs=1 Rename  :call s:RenameWithoutConfirm(<line1>, <line2>, <q-args>)
 
-" :RenameFile[!] {newname}
-command! -nargs=1 -complete=file -bang RenameFile :call s:RenameCurrentFile("<args>", "<bang>")
+" rename file with name and extension
+" :RenameFile[!] {new-name-and-extension}
+command! -nargs=1 -complete=customlist,RenameFileCompleter -bang RenameFile :call s:RenameCurrentFile("<args>", "<bang>")
 
-" :RenameExt[!] {newextension}
-command! -nargs=1 -complete=filetype -bang RenameExt :call s:RenameExtension("<args>", "<bang>")
+
+" rename file name without extension
+" :RenameName[!] {new-name}
+command! -nargs=1 -complete=customlist,RenameNameCompleter -bang RenameName :call s:RenameName("<args>", "<bang>")
+
+
+" rename file extension only
+" :RenameExt[!] {new-extension}
+command! -nargs=1 -complete=customlist,RenameExtCompleter -bang RenameExt :call s:RenameExtension("<args>", "<bang>")
 
 " let &cpo = s:save_cpo
 let &cpoptions = s:save_cpo
