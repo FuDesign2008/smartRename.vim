@@ -123,7 +123,7 @@ function! s:ListFilesOfCurrentFile()
     let nameList = []
     for item in files
         let extension = fnamemodify(item, ':e')
-        let name = fnamemodify(':t:r')
+        let name = fnamemodify(item, ':t:r')
         if strlen(extension)
             call add(extensionList, extension)
         endif
