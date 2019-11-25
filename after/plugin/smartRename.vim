@@ -141,23 +141,51 @@ endfunction
 function RenameNameCompleter(A, L, P)
     let result = s:ListFilesOfCurrentFile()
     let names = get(result, 'names', [])
-    return names
+    let hint = trim(a:A)
+    if strlen(hint) == 0
+        call sort(names)
+        return names
+    endif
+    let matchList = []
+    for item in names
+        if stridx(item, hint) > -1
+            call add(matchList, item)
+        endif
+    endfor
+    sort(matchList)
+    return matchList
 endfunction
 
 function RenameExtCompleter(A, L, P)
     let result = s:ListFilesOfCurrentFile()
     let extensions = get(result, 'extensions', [])
-    return extensions
+    let hint = trim(a:A)
+    if strlen(hint) == 0
+        call sort(extensions)
+        return extensions
+    endif
+    let matchList = []
+    for item in extensions
+        if stridx(item, hint) > -1
+            call add(matchList, item)
+        endif
+    endfor
+    sort(matchList)
+    return matchList
 endfunction
 
 function RenameFileCompleter(A, L, P)
     let result = s:ListFilesOfCurrentFile()
+
     if stridx(a:A, '.') > -1
-        let extensions = get(result, 'extensions', [])
-        return extensions
+        let indexOfDot = strridx(a:A, '.')
+        let hint = strpart(a:A, indexOfDot + 1)
+        let extensionList = RenameExtCompleter(hint, a:L, a:P)
+        return extensionList
+    else
+        let names = RenameNameCompleter(a:A, a:L, a:P)
+        return names
     endif
-    let names = get(result, 'names', [])
-    return names
 endfunction
 
 
