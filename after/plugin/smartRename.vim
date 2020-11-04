@@ -152,7 +152,7 @@ function RenameNameCompleter(A, L, P)
             call add(matchList, item)
         endif
     endfor
-    sort(matchList)
+    call sort(matchList)
     return matchList
 endfunction
 
@@ -170,7 +170,7 @@ function RenameExtCompleter(A, L, P)
             call add(matchList, item)
         endif
     endfor
-    sort(matchList)
+    call sort(matchList)
     return matchList
 endfunction
 
